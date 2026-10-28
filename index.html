@@ -170,7 +170,7 @@ h1 { font-family:var(--site-font-heading);font-size:clamp(34px,5vw,58px);line-he
   <main class="shell">
     <header class="topbar">
       <div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 9 5l3.2 6 2.1-3.5L20 19H7.5"/><path d="M4 19h3.5"/></svg></div>tempo<span style="font-size:10px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-left:-5px">STUDENT LIFE</span></div>
-      <div class="top-actions"><span class="date-pill" id="todayLabel">MARDI · 27 OCT.</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Activer le mode clair">☀ Mode clair</button><div class="avatar">S</div></div>
+      <div class="top-actions"><span class="date-pill" id="todayLabel">MARDI · 27 OCT.</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Activer le mode clair">☀ Mode clair</button><button class="theme-toggle" id="accountButton" type="button">Connexion</button><div class="avatar">S</div></div>
     </header>
     <section class="hero">
       <div><div class="eyebrow">TON ESPACE, TON RYTHME</div><h1>Une journée qui<br>te ressemble<span style="color:var(--site-primary)">.</span></h1><p>Avance dans tes études, prends soin de ton corps et garde du temps pour toi. Pas besoin d'être parfait·e : juste de trouver ton équilibre.</p></div>
@@ -218,6 +218,7 @@ h1 { font-family:var(--site-font-heading);font-size:clamp(34px,5vw,58px);line-he
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><form class="modal" id="eventForm"><h2 id="modalTitle">Ajouter à ma journée</h2><p>Prévois un moment réaliste. Tu pourras toujours adapter ton programme.</p><div class="field"><label for="eventName">Activité</label><input id="eventName" name="eventName" placeholder="Ex. : Réviser l'anatomie" required maxlength="70"></div><div class="field"><label for="eventTime">Heure</label><input id="eventTime" name="eventTime" type="time" value="16:00" required></div><div class="field"><label for="eventDuration">Durée</label><select id="eventDuration" name="eventDuration"><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60" selected>1 heure</option><option value="90">1 h 30</option><option value="120">2 heures</option></select></div><div class="field"><label for="eventKind">Catégorie</label><select id="eventKind" name="eventKind"><option value="etudes">Études / révisions</option><option value="sport">Sport / mouvement</option><option value="repas">Repas</option><option value="repos">Temps personnel / repos</option><option value="autre">Autre</option></select></div><div class="modal-actions"><button type="button" class="btn" id="cancelBtn">Annuler</button><button type="submit" class="btn primary">Ajouter au planning</button></div></form></div>
 <div class="modal-backdrop" id="sleepModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="sleepModalTitle"><form class="modal" id="sleepForm"><h2 id="sleepModalTitle">Ajouter une nuit</h2><p>Ajoute tes données de sommeil et ton ressenti du matin.</p><div class="field"><label for="sleepDate">Date de la nuit (date du réveil)</label><input id="sleepDate" type="date" required></div><div class="field"><label for="sleepBedtime">Endormissement / coucher</label><input id="sleepBedtime" type="time" value="23:00" required></div><div class="field"><label for="sleepWakeTime">Réveil</label><input id="sleepWakeTime" type="time" value="07:00" required></div><div class="field"><label for="sleepHrv">Variabilité de la fréquence cardiaque (VFC)</label><input id="sleepHrv" type="number" min="1" max="300" step="0.1" placeholder="Ex. : 52 (ms)"><small class="field-hint">En millisecondes (ms), selon la valeur fournie par ta montre.</small></div><div class="field"><label for="sleepQuality">Qualité du sommeil</label><select id="sleepQuality"><option value="">Non renseignée</option><option value="1">1 — Très mauvaise</option><option value="2">2 — Mauvaise</option><option value="3">3 — Moyenne</option><option value="4">4 — Bonne</option><option value="5">5 — Très bonne</option></select></div><div class="field"><label for="sleepMood">Humeur / bien-être</label><select id="sleepMood"><option value="">Non renseignée</option><option value="1">1 — Très mauvais</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 — Moyen</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10 — Excellent</option></select></div><div class="field"><label for="sleepSource">Source</label><select id="sleepSource"><option value="Saisie manuelle">Saisie manuelle</option><option value="Apple Watch / Santé">Apple Watch / Santé</option><option value="Garmin">Garmin</option><option value="Fitbit">Fitbit</option><option value="Autre montre">Autre montre</option></select></div><div class="field"><label for="sleepNotes">Note (facultatif)</label><input id="sleepNotes" maxlength="120" placeholder="Ex. : entraînement tardif"></div><div class="modal-actions"><button type="button" class="btn" id="cancelSleepBtn">Annuler</button><button type="submit" class="btn primary">Enregistrer la nuit</button></div></form></div>
 <div class="toast" id="toast" role="status"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const initialEvents = [
  {time:'07:00',title:'Réveil en douceur',detail:'Eau, petit-déjeuner et préparation',kind:'repos',tag:'ROUTINE'},
@@ -373,6 +374,48 @@ renderHabits();
 renderEvents();
 renderSleep();
 saveState();
+// Connexion Supabase et synchronisation privée par compte.
+const TEMPO_SUPABASE_URL = 'https://ktxbinhfmiufyoclffaa.supabase.co';
+const TEMPO_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0eGJpbmhmbWl1ZnlvY2xmZmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNzUyNjgsImV4cCI6MjEwODc1MTI2OH0.olRXW8ZNgGcwZHImqkmuKuQEx8bbj72A_mFtMCkaGXE';
+const tempoSupabase = window.supabase.createClient(TEMPO_SUPABASE_URL, TEMPO_SUPABASE_ANON_KEY);
+const tempoAccountButton = document.getElementById('accountButton');
+let tempoCloudSyncReady = false;
+async function tempoSyncToCloud(){
+ if(!tempoCloudSyncReady)return;
+ const {data:{session}} = await tempoSupabase.auth.getSession();
+ if(!session)return;
+ const raw=localStorage.getItem(STORAGE_KEY);
+ if(!raw)return;
+ const {error}=await tempoSupabase.from('tempo_data').upsert({user_id:session.user.id,data:JSON.parse(raw),updated_at:new Date().toISOString()},{onConflict:'user_id'});
+ if(error){console.error('Synchronisation Tempo impossible:',error);showToast('Synchronisation cloud impossible. Vérifie la table Supabase.');}
+ else {const note=document.getElementById('storageNote');if(note)note.innerHTML='<span class="storage-dot"></span><span><strong>Synchronisé avec ton compte.</strong> Tes données sont disponibles sur tes appareils connectés.</span>';}
+}
+const tempoOriginalSaveState=saveState;
+saveState=function(){tempoOriginalSaveState();tempoSyncToCloud().catch(err=>console.error('Erreur de synchronisation Tempo:',err));};
+tempoAccountButton.addEventListener('click',async()=>{
+ const {data:{session}}=await tempoSupabase.auth.getSession();
+ if(session){if(confirm('Compte connecté : '+session.user.email+'. Veux-tu te déconnecter ?'))await tempoSupabase.auth.signOut();return;}
+ const email=prompt('Entre ton adresse e-mail pour recevoir un lien de connexion Tempo :');
+ if(!email||!email.trim())return;
+ const {error}=await tempoSupabase.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:window.location.href.split('#')[0]}});
+ if(error){alert('Connexion impossible : '+error.message);return;}
+ alert('Un lien de connexion vient de t’être envoyé par e-mail. Ouvre-le sur cet appareil pour connecter Tempo.');
+});
+tempoSupabase.auth.onAuthStateChange((_event,session)=>{
+ tempoCloudSyncReady=Boolean(session);
+ tempoAccountButton.textContent=session?'Compte connecté':'Connexion';
+ if(!session)return;
+ setTimeout(async()=>{
+ const {data,error}=await tempoSupabase.from('tempo_data').select('data').eq('user_id',session.user.id).maybeSingle();
+ if(error){console.error('Lecture des données Tempo impossible:',error);showToast('Compte connecté, mais lecture cloud impossible.');return;}
+ if(data&&data.data){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data.data));loadState();renderHabits();renderEvents();renderSleep();updateMetrics();showToast('Données récupérées depuis le cloud.');}
+  catch(err){console.error('Chargement cloud Tempo impossible:',err);}
+ }else{await tempoSyncToCloud();}
+ const note=document.getElementById('storageNote');if(note)note.innerHTML='<span class="storage-dot"></span><span><strong>Compte Tempo connecté.</strong> Synchronisation de tes données activée.</span>';
+ },0);
+});
+tempoSupabase.auth.getSession().then(({data:{session}})=>{tempoCloudSyncReady=Boolean(session);tempoAccountButton.textContent=session?'Compte connecté':'Connexion';if(session)tempoSupabase.auth.onAuthStateChange(()=>{});});
 </script>
 </body>
 </html>
