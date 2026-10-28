@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tempo — Student life planner</title>
+<style>
+:root {
+  --site-primary: #8C7CFF;
+  --site-secondary: #C8F169;
+  --site-background: #111219;
+  --site-on-primary: #FFFFFF;
+  --site-on-secondary: #202411;
+  --site-on-background: #F4F3FA;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  color-scheme: dark;
+  --bg: #111219;
+  --panel: #1A1B25;
+  --panel-2: #222330;
+  --text: #F4F3FA;
+  --muted: #A5A4B8;
+  --line: #30313F;
+  --shadow: 0 18px 50px rgba(0,0,0,.14);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F4F3F8;
+  --panel: #FFFFFF;
+  --panel-2: #EBEAF3;
+  --text: #191923;
+  --muted: #777687;
+  --line: #E3E1ED;
+  --site-background: #F4F3F8;
+  --site-on-background: #191923;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--site-font-body); }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+#app { min-height: 100vh; width: 100%; background-color: var(--bg); color: var(--text); border-radius: 0; overflow: hidden; position: relative; isolation: isolate; }
+#app::before { content: ""; position: absolute; width: 520px; height: 520px; border-radius: 50%; top: -300px; right: -120px; background: radial-gradient(circle, rgba(140,124,255,.22), transparent 68%); opacity: var(--site-decoration-opacity); pointer-events: none; z-index: -1; }
+.shell { width: min(1200px, 100%); margin: 0 auto; padding: calc(28px * var(--site-spacing-scale)) calc(24px * var(--site-spacing-scale)) 36px; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:42px; }
+.brand { display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:-.05em; font-size:23px; }
+.logo { width:35px;height:35px;border-radius:12px;background:var(--site-primary);display:grid;place-items:center;color:white;box-shadow:0 7px 22px #8c7cff40; }
+.logo svg { width:21px;height:21px; }
+.top-actions { display:flex;align-items:center;gap:10px; }
+.date-pill,.avatar { border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:999px; padding:10px 14px; font-size:12px; }
+.avatar { width:38px;height:38px;padding:0;display:grid;place-items:center;background:var(--site-secondary);color:#202411;border:0;font-weight:800; }
+.eyebrow { color:var(--site-secondary);font-size:11px;font-weight:800;letter-spacing:.17em;text-transform:uppercase; }
+h1 { font-family:var(--site-font-heading);font-size:clamp(34px,5vw,58px);line-height:1.02;letter-spacing:-.065em;margin:13px 0 14px;font-weight:800; }
+.hero { display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:30px; }
+.hero p { max-width:540px;color:var(--muted);line-height:1.65;font-size:14px;margin:0; }
+.day-switch { display:flex;gap:6px;padding:5px;border:1px solid var(--line);background:var(--panel);border-radius:15px;flex-shrink:0; }
+.day-switch button { border:0;background:transparent;color:var(--muted);padding:10px 13px;border-radius:10px;font-size:12px;transition:all .2s; }
+.day-switch button.active { background:var(--site-primary);color:white;box-shadow:0 5px 15px #8c7cff30; }
+.metrics { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px; }
+.metric { border:1px solid var(--line);background:var(--panel);border-radius:calc(19px * var(--site-radius-scale));padding:19px;min-height:120px;transition:transform .25s,border-color .25s; }
+.metric:hover { transform:translateY(-3px);border-color:#8c7cff80; }
+.metric-head { display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;gap:8px; }
+.metric-icon { width:30px;height:30px;border-radius:10px;background:var(--panel-2);display:grid;place-items:center;font-size:15px; }
+.metric-value { font-size:27px;font-weight:800;letter-spacing:-.05em;margin-top:15px; }
+.metric-note { font-size:11px;color:var(--muted);margin-top:3px; }
+.layout { display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr);gap:18px;align-items:start; }
+.panel { background:var(--panel);border:1px solid var(--line);border-radius:calc(22px * var(--site-radius-scale));padding:22px;min-width:0; }
+.panel-head { display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:19px; }
+.panel h2 { font-size:17px;letter-spacing:-.04em;margin:0; }
+.panel-sub { color:var(--muted);font-size:11px;margin-top:5px; }
+.text-button { border:0;background:transparent;color:var(--site-primary);font-size:12px;font-weight:750;padding:8px 0; }
+.schedule { display:flex;flex-direction:column;gap:8px; }
+.event { display:grid;grid-template-columns:58px 4px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 10px;border-radius:13px;background:var(--panel-2);animation:rise .45s both;transition:transform .2s; }
+.event:hover { transform:translateX(3px); }
+.event-time { font-size:11px;color:var(--muted);font-weight:650; }
+.event-bar { width:4px;align-self:stretch;border-radius:4px;background:var(--site-primary); }
+.event[data-kind="sport"] .event-bar { background:#FF9F70; }
+.event[data-kind="repas"] .event-bar { background:var(--site-secondary); }
+.event[data-kind="repos"] .event-bar { background:#6CC9BE; }
+.event-title { font-size:12px;font-weight:750; }
+.event-detail { font-size:10px;color:var(--muted);margin-top:4px; }
+.event-tag { font-size:9px;padding:5px 7px;border-radius:7px;background:var(--panel);color:var(--muted);white-space:nowrap; }
+.event-check { border:1px solid var(--line);background:transparent;color:transparent;width:19px;height:19px;border-radius:6px;display:grid;place-items:center;font-size:12px; }
+.event.done { opacity:.55; }
+.event.done .event-title { text-decoration:line-through; }
+.event.done .event-check { background:var(--site-secondary);border-color:var(--site-secondary);color:#202411; }
+.side-stack { display:flex;flex-direction:column;gap:18px; }
+.balance-top { display:flex;align-items:center;gap:20px;margin:4px 0 22px; }
+.ring { width:108px;height:108px;border-radius:50%;display:grid;place-items:center;position:relative;flex-shrink:0;background:conic-gradient(var(--site-primary) 0 68%, var(--panel-2) 68% 100%); }
+.ring::before { content:"";position:absolute;inset:8px;border-radius:50%;background:var(--panel); }
+.ring-inner { position:relative;text-align:center; }
+.ring-inner strong { display:block;font-size:25px;letter-spacing:-.06em; }
+.ring-inner span { font-size:10px;color:var(--muted); }
+.balance-copy strong { display:block;font-size:13px;margin-bottom:6px; }
+.balance-copy p { color:var(--muted);font-size:11px;line-height:1.55;margin:0; }
+.balance-list { display:flex;flex-direction:column;gap:14px; }
+.balance-row { display:grid;grid-template-columns:10px 1fr auto;gap:9px;align-items:center;font-size:11px; }
+.dot { width:8px;height:8px;border-radius:3px;background:var(--site-primary); }
+.dot.sport { background:#FF9F70; }.dot.repas { background:var(--site-secondary); }.dot.repos { background:#6CC9BE; }
+.balance-row span:nth-child(2) { color:var(--muted); }
+.balance-row strong { font-weight:750; }
+.habit-list { display:flex;flex-direction:column;gap:10px; }
+.habit { display:flex;align-items:center;gap:11px;padding:10px 0; }
+.habit-emoji { width:37px;height:37px;border-radius:12px;background:var(--panel-2);display:grid;place-items:center;font-size:17px; }
+.habit-info { flex:1;min-width:0; }
+.habit-info strong { font-size:12px;display:block; }
+.habit-info span { color:var(--muted);font-size:10px;display:block;margin-top:4px; }
+.toggle { width:38px;height:22px;border:0;border-radius:99px;background:var(--panel-2);padding:3px;transition:background .2s; }
+.toggle::after { content:"";display:block;width:16px;height:16px;background:var(--muted);border-radius:50%;transition:transform .2s,background .2s; }
+.toggle[aria-checked="true"] { background:var(--site-primary); }.toggle[aria-checked="true"]::after { transform:translateX(16px);background:white; }
+.quote { border-radius:calc(20px * var(--site-radius-scale));padding:22px;background:var(--site-secondary);color:#202411;position:relative;overflow:hidden; }
+.quote::after { content:"✳";position:absolute;font-size:100px;right:-4px;bottom:-37px;opacity:.12; }
+.quote .eyebrow { color:#515C29; }.quote p { font-size:19px;font-weight:800;letter-spacing:-.04em;line-height:1.25;margin:12px 0 10px;max-width:250px; }.quote small { font-size:10px;opacity:.7; }
+.footer { display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--muted);font-size:10px;padding:24px 4px 0; }
+.footer span:last-child { color:var(--site-primary);font-weight:700; }
+.modal-backdrop { position:fixed;inset:0;background:#05050bcc;backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;z-index:10; }
+.modal-backdrop.open { display:flex;animation:fade .2s; }
+.modal { width:min(440px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow); }
+.modal h2 { margin:0 0 6px;font-size:21px;letter-spacing:-.04em; }.modal p { color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 20px; }
+.field { display:flex;flex-direction:column;gap:7px;margin-bottom:14px; }.field label { color:var(--muted);font-size:11px; }.field input,.field select { width:100%;border:1px solid var(--line);background:var(--panel-2);color:var(--text);padding:12px;border-radius:10px;outline:none; }.field input:focus,.field select:focus { border-color:var(--site-primary); }
+.modal-actions { display:flex;justify-content:flex-end;gap:9px;margin-top:20px; }.btn { border:1px solid var(--line);background:var(--panel-2);color:var(--text);padding:11px 15px;border-radius:11px;font-size:12px;font-weight:700; }.btn.primary { background:var(--site-primary);color:white;border-color:var(--site-primary); }
+.toast { position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:var(--site-secondary);color:#202411;border-radius:12px;padding:12px 16px;font-size:12px;font-weight:750;opacity:0;pointer-events:none;transition:all .25s;z-index:20; }.toast.show { opacity:1;transform:translate(-50%,0); }
+.storage-note { display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--muted);font-size:11px;margin:0 0 16px; }
+.storage-note strong { color:var(--text); }
+.storage-dot { width:8px;height:8px;border-radius:50%;background:#6CC9BE;flex-shrink:0; }
+.theme-toggle { border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:750;white-space:nowrap; }
+.theme-toggle:hover { border-color:var(--site-primary); }
+.delete-btn { border:0;background:transparent;color:var(--muted);border-radius:8px;padding:5px 7px;font-size:16px;line-height:1;flex-shrink:0; }
+.delete-btn:hover { background:rgba(239,91,105,.12);color:#e65f70; }
+.habit-actions { display:flex;align-items:center;gap:10px; }
+.sleep-panel { margin:0 0 18px; }
+.sleep-actions { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+.sleep-grid { display:grid;grid-template-columns:minmax(210px,.8fr) minmax(0,1.4fr);gap:22px;align-items:center; }
+.sleep-summary { display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--panel-2);border-radius:16px;padding:18px;min-height:130px; }
+.sleep-duration { font-size:31px;font-weight:850;letter-spacing:-.06em;margin:8px 0 5px; }
+.sleep-meta { color:var(--muted);font-size:11px;line-height:1.5; }
+.sleep-score { width:62px;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:50%;flex-shrink:0; }
+.sleep-score strong,.sleep-score span { font-size:19px;font-weight:850; }
+.sleep-score small { color:var(--muted);font-size:9px; }
+.sleep-chart { min-height:130px;display:flex;align-items:stretch;gap:10px;justify-content:space-around;padding:12px 4px 0; }
+.sleep-day { display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px; }
+.sleep-bar-wrap { height:92px;width:100%;display:flex;align-items:flex-end;justify-content:center;border-bottom:1px solid var(--line); }
+.sleep-bar { width:min(30px,75%);min-height:3px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,var(--site-primary),#6c5be8);position:relative; }
+.sleep-day.today .sleep-bar { background:linear-gradient(180deg,#C8F169,#8ebc32); }
+.sleep-day-label { color:var(--muted);font-size:10px; }
+.sleep-day-hours { font-size:10px;font-weight:750;white-space:nowrap; }
+.sleep-note { margin-top:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:11px;line-height:1.5; }
+.sleep-history { display:flex;flex-direction:column;gap:8px;margin-top:15px; }
+.sleep-record { display:flex;align-items:center;gap:12px;background:var(--panel-2);border-radius:12px;padding:11px 12px; }
+.sleep-record-icon { width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:var(--panel);font-size:17px;flex-shrink:0; }
+.sleep-record-info { flex:1;min-width:0; }
+.sleep-record-info strong { display:block;font-size:12px; }
+.sleep-record-info span { display:block;color:var(--muted);font-size:10px;margin-top:4px;line-height:1.4; }
+.sleep-record-hours { font-size:13px;font-weight:800;white-space:nowrap; }
+.empty-state { color:var(--muted);font-size:12px;line-height:1.5;margin:12px 0; }
+.file-input-hidden { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;clip-path:inset(50%); }
+@keyframes rise { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:translateY(0); } }
+@keyframes fade { from { opacity:0; } to { opacity:1; } }
+@media (max-width:850px) { .hero { align-items:flex-start;flex-direction:column; }.day-switch { width:100%;justify-content:space-between; }.day-switch button { flex:1; }.metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }.layout { grid-template-columns:1fr; }.side-stack { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }.quote { grid-column:1/-1; }.sleep-grid { grid-template-columns:1fr;gap:12px; } }
+@media (max-width:520px) { .shell { padding:20px 14px 26px; }.topbar { margin-bottom:30px; }.date-pill#todayLabel { display:none; }.theme-toggle { padding:9px 10px;font-size:11px; } h1 { font-size:39px; }.hero { gap:18px; }.metric { padding:15px;min-height:110px; }.metric-value { font-size:24px; }.panel { padding:16px;border-radius:18px; }.event { grid-template-columns:48px 4px minmax(0,1fr) auto;gap:8px;padding:11px 8px; }.event-tag { display:none; }.side-stack { grid-template-columns:1fr; }.quote { grid-column:auto; }.footer { flex-direction:column;align-items:flex-start; }.sleep-panel .panel-head { align-items:flex-start;flex-direction:column; }.sleep-actions { width:100%; }.sleep-actions .btn { flex:1;justify-content:center; }.sleep-record { gap:8px;padding:9px; }.sleep-record-hours { font-size:12px; } }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 9 5l3.2 6 2.1-3.5L20 19H7.5"/><path d="M4 19h3.5"/></svg></div>tempo<span style="font-size:10px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-left:-5px">STUDENT LIFE</span></div>
+      <div class="top-actions"><span class="date-pill" id="todayLabel">MARDI · 27 OCT.</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Activer le mode clair">☀ Mode clair</button><div class="avatar">S</div></div>
+    </header>
+    <section class="hero">
+      <div><div class="eyebrow">TON ESPACE, TON RYTHME</div><h1>Une journée qui<br>te ressemble<span style="color:var(--site-primary)">.</span></h1><p>Avance dans tes études, prends soin de ton corps et garde du temps pour toi. Pas besoin d'être parfait·e : juste de trouver ton équilibre.</p></div>
+      <nav class="day-switch" aria-label="Choisir le jour"><button class="active" data-day="0">Aujourd'hui</button><button data-day="1">Demain</button><button data-day="2">Mercredi</button><button data-day="3">Jeudi</button></nav>
+    </section>
+    <div class="storage-note" id="storageNote"><span class="storage-dot"></span><span><strong>Enregistrement local activé.</strong> Tes changements sont conservés sur cet appareil dans ce navigateur.</span></div>
+    <section class="metrics" aria-label="Résumé de la journée">
+      <article class="metric"><div class="metric-head"><span>Études prévues</span><span class="metric-icon">✎</span></div><div class="metric-value" id="studyValue">3 h 30</div><div class="metric-note">Des sessions avec des pauses</div></article>
+      <article class="metric"><div class="metric-head"><span>Mouvement</span><span class="metric-icon">↗</span></div><div class="metric-value" id="sportValue">1 h 15</div><div class="metric-note">Sport ou activité physique</div></article>
+      <article class="metric"><div class="metric-head"><span>Temps pour toi</span><span class="metric-icon">☼</span></div><div class="metric-value" id="meValue">2 h</div><div class="metric-note">Une vraie place pour souffler</div></article>
+      <article class="metric"><div class="metric-head"><span>Habitudes</span><span class="metric-icon">✳</span></div><div class="metric-value" id="habitValue">2/4</div><div class="metric-note">Petits pas, progrès réel</div></article>
+    </section>
+    <section class="panel sleep-panel">
+      <div class="panel-head"><div><h2>Mon sommeil</h2><div class="panel-sub">Suis tes nuits et repère tes tendances de récupération.</div></div><div class="sleep-actions"><label class="btn" for="sleepImportInput">Importer CSV / JSON</label><input class="file-input-hidden" id="sleepImportInput" type="file" accept=".csv,.json,application/json,text/csv"><button class="btn" id="downloadSleepTemplate" type="button">Modèle CSV</button><button class="btn primary" id="addSleepBtn" type="button">+ Ajouter une nuit</button></div></div>
+      <div class="sleep-grid"><div class="sleep-summary"><div><div class="eyebrow">DERNIÈRE NUIT</div><div class="sleep-duration" id="sleepDuration">—</div><div class="sleep-meta" id="sleepMeta">Ajoute une nuit ou importe tes données.</div></div><div class="sleep-score"><span id="sleepQualityScore">—</span><small>qualité / 5</small></div></div><div class="sleep-chart" id="sleepChart" aria-label="Durée de sommeil des sept dernières nuits"></div></div>
+      <div class="sleep-note">Les montres ne se synchronisent pas directement à ce site statique. Tu peux saisir tes nuits ou importer un CSV/JSON contenant les données exportées par ton service de santé. Les formats varient selon Apple, Garmin, Fitbit et les autres marques.</div>
+      <div class="sleep-history" id="sleepHistory" aria-live="polite"></div>
+    </section>
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head"><div><h2 id="scheduleTitle">Le programme du jour</h2><div class="panel-sub">Un planning flexible, pas une course contre la montre.</div></div><button class="text-button" id="addEventBtn">+ Ajouter</button></div>
+        <div class="schedule" id="scheduleList" aria-live="polite"></div>
+      </section>
+      <aside class="side-stack">
+        <section class="panel">
+          <div class="panel-head"><div><h2>Mon équilibre</h2><div class="panel-sub">Répartir son énergie, pas seulement ses heures.</div></div><span style="font-size:19px">◌</span></div>
+          <div class="balance-top"><div class="ring"><div class="ring-inner"><strong id="balancePercent">68%</strong><span>équilibre prévu</span></div></div><div class="balance-copy"><strong>Tu avances à ton rythme.</strong><p>Ton planning garde de la place pour les études, le mouvement et la récupération.</p></div></div>
+          <div class="balance-list"><div class="balance-row"><span class="dot"></span><span>Études & révisions</span><strong>3 h 30</strong></div><div class="balance-row"><span class="dot sport"></span><span>Sport & mouvement</span><strong>1 h 15</strong></div><div class="balance-row"><span class="dot repas"></span><span>Repas & routine</span><strong>2 h 10</strong></div><div class="balance-row"><span class="dot repos"></span><span>Temps personnel</span><strong>2 h</strong></div></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Mes habitudes</h2><div class="panel-sub">Coche ce que tu as fait aujourd'hui.</div></div><div class="habit-actions"><button class="text-button" id="addHabitBtn" type="button">+ Ajouter</button><span class="eyebrow" id="habitProgress">2 SUR 4</span></div></div>
+          <div class="habit-list" id="habitList">
+            <div class="habit"><div class="habit-emoji">💧</div><div class="habit-info"><strong>Boire régulièrement</strong><span>Un peu d'eau tout au long du jour</span></div><button class="toggle" role="switch" aria-checked="true" aria-label="Boire régulièrement" data-habit="0"></button></div>
+            <div class="habit"><div class="habit-emoji">📚</div><div class="habit-info"><strong>Session de révision</strong><span>Une chose à la fois</span></div><button class="toggle" role="switch" aria-checked="true" aria-label="Session de révision" data-habit="1"></button></div>
+            <div class="habit"><div class="habit-emoji">🥗</div><div class="habit-info"><strong>Un repas complet</strong><span>Faire une vraie pause pour manger</span></div><button class="toggle" role="switch" aria-checked="false" aria-label="Un repas complet" data-habit="2"></button></div>
+            <div class="habit"><div class="habit-emoji">🌙</div><div class="habit-info"><strong>Préparer son sommeil</strong><span>Ralentir avant de se coucher</span></div><button class="toggle" role="switch" aria-checked="false" aria-label="Préparer son sommeil" data-habit="3"></button></div>
+          </div>
+        </section>
+        <section class="quote"><div class="eyebrow">LE RAPPEL DU JOUR</div><p>Le repos fait partie du plan. Il ne se mérite pas, il se prévoit.</p><small>Un petit rappel de Tempo</small></section>
+      </aside>
+    </div>
+    <footer class="footer"><span>Tempo · Données enregistrées sur cet appareil.</span><span>Moins de pression. Plus d'équilibre. ✳</span></footer>
+  </main>
+</div>
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><form class="modal" id="eventForm"><h2 id="modalTitle">Ajouter à ma journée</h2><p>Prévois un moment réaliste. Tu pourras toujours adapter ton programme.</p><div class="field"><label for="eventName">Activité</label><input id="eventName" name="eventName" placeholder="Ex. : Réviser l'anatomie" required maxlength="70"></div><div class="field"><label for="eventTime">Heure</label><input id="eventTime" name="eventTime" type="time" value="16:00" required></div><div class="field"><label for="eventDuration">Durée</label><select id="eventDuration" name="eventDuration"><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60" selected>1 heure</option><option value="90">1 h 30</option><option value="120">2 heures</option></select></div><div class="field"><label for="eventKind">Catégorie</label><select id="eventKind" name="eventKind"><option value="etudes">Études / révisions</option><option value="sport">Sport / mouvement</option><option value="repas">Repas</option><option value="repos">Temps personnel / repos</option><option value="autre">Autre</option></select></div><div class="modal-actions"><button type="button" class="btn" id="cancelBtn">Annuler</button><button type="submit" class="btn primary">Ajouter au planning</button></div></form></div>
+<div class="modal-backdrop" id="sleepModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="sleepModalTitle"><form class="modal" id="sleepForm"><h2 id="sleepModalTitle">Ajouter une nuit</h2><p>Renseigne les horaires mesurés par ta montre ou estimés. Tempo calculera la durée.</p><div class="field"><label for="sleepDate">Date de la nuit (date du réveil)</label><input id="sleepDate" type="date" required></div><div class="field"><label for="sleepBedtime">Endormissement / coucher</label><input id="sleepBedtime" type="time" value="23:00" required></div><div class="field"><label for="sleepWakeTime">Réveil</label><input id="sleepWakeTime" type="time" value="07:00" required></div><div class="field"><label for="sleepQuality">Qualité ressentie</label><select id="sleepQuality"><option value="">Non renseignée</option><option value="1">1 — Très mauvaise</option><option value="2">2 — Mauvaise</option><option value="3">3 — Moyenne</option><option value="4">4 — Bonne</option><option value="5">5 — Très bonne</option></select></div><div class="field"><label for="sleepSource">Source</label><select id="sleepSource"><option value="Saisie manuelle">Saisie manuelle</option><option value="Apple Watch / Santé">Apple Watch / Santé</option><option value="Garmin">Garmin</option><option value="Fitbit">Fitbit</option><option value="Autre montre">Autre montre</option></select></div><div class="field"><label for="sleepNotes">Note (facultatif)</label><input id="sleepNotes" maxlength="120" placeholder="Ex. : entraînement tardif"></div><div class="modal-actions"><button type="button" class="btn" id="cancelSleepBtn">Annuler</button><button type="submit" class="btn primary">Enregistrer la nuit</button></div></form></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const initialEvents = [
+ {time:'07:00',title:'Réveil en douceur',detail:'Eau, petit-déjeuner et préparation',kind:'repos',tag:'ROUTINE'},
+ {time:'08:00',title:'Cours / campus',detail:'Apprendre, participer, prendre des notes',kind:'etudes',tag:'COURS'},
+ {time:'12:15',title:'Pause déjeuner',detail:'Manger sans se presser',kind:'repas',tag:'REPAS'},
+ {time:'13:00',title:'Cours de l’après-midi',detail:'Garder de l’énergie pour la suite',kind:'etudes',tag:'COURS'},
+ {time:'16:15',title:'Révisions ciblées',detail:'45 min de concentration + une pause',kind:'etudes',tag:'FOCUS'},
+ {time:'17:30',title:'Sport / entraînement',detail:'Bouger selon ton énergie du jour',kind:'sport',tag:'MOUVEMENT'},
+ {time:'19:30',title:'Repas du soir',detail:'Recharger les batteries',kind:'repas',tag:'REPAS'},
+ {time:'20:15',title:'Temps libre',detail:'Musique, amis, lecture ou rien du tout',kind:'repos',tag:'POUR TOI'},
+ {time:'22:15',title:'Déconnexion',detail:'Préparer demain et ralentir',kind:'repos',tag:'SOMMEIL'}
+];
+const dayNames = ['Le programme du jour','Le programme de demain','Le programme de mercredi','Le programme de jeudi'];
+let currentDay = 0;
+let eventsByDay = [initialEvents.map(x=>({...x})), initialEvents.map(x=>({...x})).filter(x=>x.kind!=='sport').concat([{time:'18:00',title:'Séance de sport légère',detail:'Selon la forme et les obligations',kind:'sport',tag:'MOUVEMENT'}]), initialEvents.map(x=>({...x})), initialEvents.map(x=>({...x}))];
+let habits = [
+ {id:'water',emoji:'💧',name:'Boire régulièrement',detail:'Un peu d’eau tout au long du jour'},
+ {id:'study',emoji:'📚',name:'Session de révision',detail:'Une chose à la fois'},
+ {id:'meal',emoji:'🥗',name:'Un repas complet',detail:'Faire une vraie pause pour manger'},
+ {id:'sleep',emoji:'🌙',name:'Préparer son sommeil',detail:'Ralentir avant de se coucher'}
+];
+let habitState = [true,true,false,false];
+let sleepLogs = [];
+let currentTheme = 'dark';
+const STORAGE_KEY = 'tempo-student-planner-v1';
+function saveState(){
+ try {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({eventsByDay,habits,habitState,completedByDay,sleepLogs}));
+  const note=document.getElementById('storageNote');
+  if(note) note.innerHTML='<span class="storage-dot"></span><span><strong>Enregistré.</strong> Tes changements sont conservés sur cet appareil dans ce navigateur.</span>';
+ } catch(err) {
+  const note=document.getElementById('storageNote');
+  if(note) note.innerHTML='<span class="storage-dot" style="background:#FF9F70"></span><span><strong>Enregistrement indisponible.</strong> Autorise le stockage du navigateur pour conserver tes changements.</span>';
+ }
+}
+const completedByDay = [[],[],[],[]];
+function loadState(){
+ try {
+  const raw=localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  const saved=JSON.parse(raw);
+  if(Array.isArray(saved.eventsByDay)&&saved.eventsByDay.length===4&&saved.eventsByDay.every(Array.isArray)) eventsByDay=saved.eventsByDay;
+  if(Array.isArray(saved.habits)&&saved.habits.every(h=>h&&typeof h.name==='string')) habits=saved.habits;
+  if(Array.isArray(saved.habitState)&&saved.habitState.length===habits.length) habitState=saved.habitState.map(Boolean);
+  if(Array.isArray(saved.completedByDay)&&saved.completedByDay.length===4) saved.completedByDay.forEach((day,i)=>{completedByDay[i]=Array.isArray(day)?day:[];});
+  if(Array.isArray(saved.sleepLogs)) sleepLogs=saved.sleepLogs.filter(s=>s&&typeof s.date==='string'&&Number(s.durationMinutes)>0);
+ } catch(err) { console.warn('Impossible de charger les données Tempo.',err); }
+}
+loadState();
+const list = document.getElementById('scheduleList');
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderEvents(){
+ const evs=[...eventsByDay[currentDay]].sort((a,b)=>a.time.localeCompare(b.time));
+ list.innerHTML=evs.map((e,i)=>{const originalIndex=eventsByDay[currentDay].indexOf(e);const done=completedByDay[currentDay].includes(originalIndex);return `<article class="event${done?' done':''}" data-kind="${esc(e.kind)}" style="animation-delay:${Math.min(i*35,300)}ms"><div class="event-time">${esc(e.time)}</div><div class="event-bar"></div><div><div class="event-title">${esc(e.title)}</div><div class="event-detail">${esc(e.detail)}</div></div><div style="display:flex;align-items:center;gap:7px"><span class="event-tag">${esc(e.tag)}</span><button class="event-check" aria-label="Marquer ${esc(e.title)} comme terminé" aria-pressed="${done?'true':'false'}" title="Marquer comme terminé">✓</button></div></article>`;}).join('');
+ document.getElementById('scheduleTitle').textContent=dayNames[currentDay];
+ list.querySelectorAll('.event-check').forEach((btn,i)=>btn.addEventListener('click',()=>{const evs=[...eventsByDay[currentDay]].sort((a,b)=>a.time.localeCompare(b.time));const originalIndex=eventsByDay[currentDay].indexOf(evs[i]);const doneIndex=completedByDay[currentDay].indexOf(originalIndex);if(doneIndex>=0)completedByDay[currentDay].splice(doneIndex,1);else completedByDay[currentDay].push(originalIndex);renderEvents();saveState();showToast(doneIndex<0?'Bien joué, une étape de faite.':'Activité remise dans ta liste.');}));
+ const sortedForDelete=[...eventsByDay[currentDay]].sort((a,b)=>a.time.localeCompare(b.time));
+ list.querySelectorAll('.event').forEach((row,i)=>{const originalIndex=eventsByDay[currentDay].indexOf(sortedForDelete[i]);const actions=row.lastElementChild;const remove=document.createElement('button');remove.type='button';remove.className='delete-btn delete-event';remove.textContent='×';remove.title='Supprimer cette activité';remove.setAttribute('aria-label','Supprimer '+sortedForDelete[i].title);remove.dataset.index=String(originalIndex);actions.appendChild(remove);});
+ list.querySelectorAll('.delete-event').forEach(btn=>btn.addEventListener('click',()=>{const index=Number(btn.dataset.index);const item=eventsByDay[currentDay][index];if(!item)return;if(!confirm('Supprimer « '+item.title+' » de ton planning ?'))return;eventsByDay[currentDay].splice(index,1);completedByDay[currentDay]=completedByDay[currentDay].filter(i=>i!==index).map(i=>i>index?i-1:i);renderEvents();saveState();showToast('Activité supprimée.');}));
+ updateMetrics();
+}
+function renderHabits(){
+ const container=document.getElementById('habitList');
+ container.innerHTML=habits.map((h,i)=>'<div class="habit"><div class="habit-emoji">'+esc(h.emoji||'✨')+'</div><div class="habit-info"><strong>'+esc(h.name)+'</strong><span>'+esc(h.detail||'À ton rythme')+'</span></div><button class="toggle" type="button" role="switch" aria-checked="'+String(Boolean(habitState[i]))+'" aria-label="Valider '+esc(h.name)+'" data-habit="'+i+'"></button><button type="button" class="delete-btn delete-habit" data-habit="'+i+'" title="Supprimer cette habitude" aria-label="Supprimer '+esc(h.name)+'">×</button></div>').join('')||'<p class="empty-state">Aucune habitude pour le moment. Tu peux en ajouter une quand tu veux.</p>';
+ container.querySelectorAll('.toggle').forEach(btn=>btn.addEventListener('click',()=>{const i=Number(btn.dataset.habit);habitState[i]=!habitState[i];renderHabits();updateMetrics();saveState();showToast(habitState[i]?'Habitude validée. Bien joué !':'Habitude décochée.');}));
+ container.querySelectorAll('.delete-habit').forEach(btn=>btn.addEventListener('click',()=>{const i=Number(btn.dataset.habit);const habit=habits[i];if(!habit)return;if(!confirm('Supprimer l’habitude « '+habit.name+' » ?'))return;habits.splice(i,1);habitState.splice(i,1);renderHabits();updateMetrics();saveState();showToast('Habitude supprimée.');}));
+ updateMetrics();
+}
+function updateMetrics(){
+ const evs=eventsByDay[currentDay];
+ const mins=kind=>evs.filter(e=>e.kind===kind).reduce((s,e)=>s+(e.duration||({etudes:60,sport:75,repas:40,repos:45,autre:30}[kind]||30)),0);
+ const format=m=>{let h=Math.floor(m/60),r=m%60;return h?(r?`${h} h ${r}`:`${h} h`):`${r} min`;};
+ document.getElementById('studyValue').textContent=format(mins('etudes'));
+ document.getElementById('sportValue').textContent=format(mins('sport'));
+ document.getElementById('meValue').textContent=format(mins('repos'));
+ document.getElementById('habitValue').textContent=habitState.filter(Boolean).length+'/'+habits.length;
+ document.getElementById('habitProgress').textContent=habitState.filter(Boolean).length+' SUR '+habits.length;
+ const pct=Math.round(100*(mins('etudes')+mins('sport')+mins('repos'))/Math.max(1,evs.length*60));
+ const shown=Math.max(35,Math.min(95,pct));document.getElementById('balancePercent').textContent=shown+'%';document.querySelector('.ring').style.background=`conic-gradient(var(--site-primary) 0 ${shown}%, var(--panel-2) ${shown}% 100%)`;
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove('show'),2200);}
+document.querySelectorAll('.day-switch button').forEach(btn=>btn.addEventListener('click',()=>{currentDay=Number(btn.dataset.day);document.querySelectorAll('.day-switch button').forEach(b=>b.classList.toggle('active',b===btn));renderEvents();}));
+document.getElementById('addHabitBtn').addEventListener('click',()=>{const name=prompt('Quel nom donner à cette habitude ?');if(!name||!name.trim())return;habits.push({id:'custom-'+Date.now(),emoji:'✨',name:name.trim().slice(0,60),detail:'À ton rythme'});habitState.push(false);renderHabits();saveState();showToast('Nouvelle habitude ajoutée.');});
+const backdrop=document.getElementById('modalBackdrop');
+document.getElementById('addEventBtn').addEventListener('click',()=>{backdrop.classList.add('open');document.getElementById('eventName').focus();});
+function closeModal(){backdrop.classList.remove('open');}
+document.getElementById('cancelBtn').addEventListener('click',closeModal);
+backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.getElementById('eventForm').addEventListener('submit',e=>{e.preventDefault();const name=document.getElementById('eventName').value.trim();if(!name)return;const time=document.getElementById('eventTime').value;const duration=Number(document.getElementById('eventDuration').value);const kind=document.getElementById('eventKind').value;const labels={etudes:'ÉTUDES',sport:'MOUVEMENT',repas:'REPAS',repos:'POUR TOI',autre:'PERSO'};eventsByDay[currentDay].push({time,title:name,detail:`Durée prévue : ${duration>=60?(duration/60)+' h':duration+' min'}`,kind,tag:labels[kind]||'PERSO',duration});renderEvents();saveState();closeModal();e.target.reset();document.getElementById('eventTime').value='16:00';document.getElementById('eventDuration').value='60';showToast('Activité ajoutée à ton planning.');});
+const sleepModal=document.getElementById('sleepModalBackdrop');
+function closeSleepModal(){sleepModal.classList.remove('open');}
+function formatSleepDuration(minutes){const m=Math.max(0,Math.round(Number(minutes)||0));return Math.floor(m/60)+' h '+String(m%60).padStart(2,'0');}
+function minutesBetween(start,end){if(!start||!end)return 0;const a=start.split(':').map(Number),b=end.split(':').map(Number);let diff=b[0]*60+b[1]-a[0]*60-a[1];if(diff<=0)diff+=1440;return diff;}
+function renderSleep(){
+ const sorted=[...sleepLogs].sort((a,b)=>b.date.localeCompare(a.date));
+ const latest=sorted[0];
+ document.getElementById('sleepDuration').textContent=latest?formatSleepDuration(latest.durationMinutes):'—';
+ document.getElementById('sleepMeta').textContent=latest?((latest.bedtime&&latest.wakeTime?latest.bedtime+' → '+latest.wakeTime+' · ':'')+(latest.source||'Saisie manuelle')):'Ajoute une nuit ou importe tes données.';
+ document.getElementById('sleepQualityScore').textContent=latest&&latest.quality?String(latest.quality)+'/5':'—';
+ const recent=sorted.slice(0,7).reverse();
+ const chart=document.getElementById('sleepChart');
+ if(!recent.length){chart.innerHTML='<p class="empty-state">Ton historique apparaîtra ici après la première nuit enregistrée.</p>';}
+ else {const max=Math.max(480,...recent.map(s=>Number(s.durationMinutes)||0));chart.innerHTML=recent.map(s=>{const hours=Number(s.durationMinutes)||0;const day=new Date(s.date+'T12:00:00').toLocaleDateString('fr-CH',{weekday:'short'}).replace('.','');return '<div class="sleep-day"><div class="sleep-day-hours">'+(hours?formatSleepDuration(hours).replace(' h ','h'): '—')+'</div><div class="sleep-bar-wrap"><div class="sleep-bar" style="height:'+Math.max(3,Math.min(100,hours/max*100))+'%" title="'+formatSleepDuration(hours)+'"></div></div><div class="sleep-day-label">'+esc(day)+'</div></div>';}).join('');}
+ const history=document.getElementById('sleepHistory');
+ history.innerHTML=sorted.slice(0,5).map(s=>'<div class="sleep-record"><div class="sleep-record-icon">🌙</div><div class="sleep-record-info"><strong>'+esc(new Date(s.date+'T12:00:00').toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'short'}))+(s.quality?' · qualité '+esc(s.quality)+'/5':'')+'</strong><span>'+esc(s.source||'Saisie manuelle')+(s.deepMinutes?' · profond '+formatSleepDuration(s.deepMinutes):'')+(s.remMinutes?' · paradoxal '+formatSleepDuration(s.remMinutes):'')+(s.notes?' · '+esc(s.notes):'')+'</span></div><div class="sleep-record-hours">'+formatSleepDuration(s.durationMinutes)+'</div><button class="delete-btn delete-sleep" type="button" data-date="'+esc(s.date)+'" title="Supprimer cette nuit" aria-label="Supprimer la nuit du '+esc(s.date)+'">×</button></div>').join('')||'';
+ history.querySelectorAll('.delete-sleep').forEach(btn=>btn.addEventListener('click',()=>{const date=btn.dataset.date;if(!confirm('Supprimer les données de sommeil du '+date+' ?'))return;sleepLogs=sleepLogs.filter(s=>s.date!==date);renderSleep();saveState();showToast('Nuit supprimée.');}));
+}
+function csvRows(text){
+ const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(line=>line.trim());
+ if(!lines.length)return [];
+ const splitLine=line=>{const out=[];let value='',quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'&&quoted){value+='"';i++;}else if(c==='"'){quoted=!quoted;}else if((c===','||c===';')&&!quoted){out.push(value.trim());value='';}else value+=c;}out.push(value.trim());return out;};
+ const headers=splitLine(lines.shift()).map(h=>h.trim());
+ return lines.map(line=>{const vals=splitLine(line),obj={};headers.forEach((h,i)=>obj[h]=vals[i]||'');return obj;});
+}
+function normalizeSleep(row){
+ const clean=k=>String(k).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+ const get=aliases=>{const key=Object.keys(row).find(k=>aliases.includes(clean(k)));return key===undefined?'':row[key];};
+ const dateRaw=String(get(['date','sleepdate','day','calendardate','startdate','wakeupdate'])||'').trim();
+ const dateMatch=dateRaw.match(/\d{4}-\d{2}-\d{2}/);
+ let date=dateMatch?dateMatch[0]:'';
+ if(!date&&dateRaw){const parsed=new Date(dateRaw);if(!Number.isNaN(parsed.getTime()))date=parsed.getFullYear()+'-'+String(parsed.getMonth()+1).padStart(2,'0')+'-'+String(parsed.getDate()).padStart(2,'0');}
+ const bedtime=String(get(['bedtime','sleepstart','starttime','lightsout','start'])||'').trim().slice(0,5);
+ const wakeTime=String(get(['waketime','sleepend','endtime','wake','end'])||'').trim().slice(0,5);
+ const durRaw=get(['durationminutes','minutesasleep','totalsleepminutes','sleepminutes','totalminutes','duration','sleepduration','asleep']);
+ let durationMinutes=Number(get(['durationminutes','minutesasleep','totalsleepminutes','sleepminutes','totalminutes']));
+ if(!durationMinutes&&durRaw){const v=String(durRaw).trim();const hm=v.match(/^(\d{1,2}):(\d{2})$/);const hTxt=v.match(/(\d+(?:\.\d+)?)\s*h/i);if(hm)durationMinutes=Number(hm[1])*60+Number(hm[2]);else if(hTxt)durationMinutes=Math.round(Number(hTxt[1])*60);else if(Number.isFinite(Number(v)))durationMinutes=Number(v);}
+ if(!durationMinutes&&bedtime&&wakeTime)durationMinutes=minutesBetween(bedtime,wakeTime);
+ if(!date||!Number.isFinite(durationMinutes)||durationMinutes<=0||durationMinutes>1440)return null;
+ const q=Number(get(['quality','sleepscore','score','rating']));
+ const num=aliases=>{const n=Number(get(aliases));return Number.isFinite(n)&&n>0?n:0;};
+ return {date,bedtime,wakeTime,durationMinutes,quality:q>=1&&q<=5?q:0,deepMinutes:num(['deepminutes','minutesdeep','deepsleepminutes']),remMinutes:num(['remminutes','minutesrem','remsleepminutes']),awakeMinutes:num(['awakeminutes','minutesawake','awake']),source:String(get(['source','device','provider','watch'])||'Import CSV/JSON'),notes:String(get(['notes','note','comment'])||'')};
+}
+function mergeSleepRecords(rows){
+ let imported=0;rows.forEach(row=>{const record=normalizeSleep(row);if(!record)return;const i=sleepLogs.findIndex(s=>s.date===record.date);if(i>=0)sleepLogs[i]={...sleepLogs[i],...record};else sleepLogs.push(record);imported++;});
+ return imported;
+}
+document.getElementById('addSleepBtn').addEventListener('click',()=>{document.getElementById('sleepDate').value=new Date().toISOString().slice(0,10);sleepModal.classList.add('open');document.getElementById('sleepBedtime').focus();});
+document.getElementById('cancelSleepBtn').addEventListener('click',closeSleepModal);
+sleepModal.addEventListener('click',e=>{if(e.target===sleepModal)closeSleepModal();});
+document.getElementById('sleepForm').addEventListener('submit',e=>{e.preventDefault();const date=document.getElementById('sleepDate').value;const bedtime=document.getElementById('sleepBedtime').value;const wakeTime=document.getElementById('sleepWakeTime').value;const durationMinutes=minutesBetween(bedtime,wakeTime);if(!date||!durationMinutes){showToast('Vérifie la date et les horaires.');return;}const quality=Number(document.getElementById('sleepQuality').value)||0;const source=document.getElementById('sleepSource').value;const notes=document.getElementById('sleepNotes').value.trim();const record={date,bedtime,wakeTime,durationMinutes,quality,source,notes};const idx=sleepLogs.findIndex(s=>s.date===date);if(idx>=0)sleepLogs[idx]=record;else sleepLogs.push(record);renderSleep();saveState();closeSleepModal();e.target.reset();document.getElementById('sleepBedtime').value='23:00';document.getElementById('sleepWakeTime').value='07:00';showToast('Nuit enregistrée.');});
+document.getElementById('sleepImportInput').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const raw=await file.text();let rows;if(file.name.toLowerCase().endsWith('.json')){const data=JSON.parse(raw);rows=Array.isArray(data)?data:(data.sleepLogs||data.sleep||data.records||data.data||[]);if(!Array.isArray(rows))throw new Error('Le JSON ne contient pas une liste de nuits.');}else rows=csvRows(raw);const count=mergeSleepRecords(rows);if(!count)throw new Error('Aucune nuit reconnue. Vérifie les colonnes date et duration_minutes.');renderSleep();saveState();showToast(count+' nuit(s) importée(s).');}catch(err){alert('Import impossible : '+err.message+'\n\nFormat conseillé : date,duration_minutes,bedtime,wake_time,quality,deep_minutes,rem_minutes,source');}finally{e.target.value='';}});
+document.getElementById('downloadSleepTemplate').addEventListener('click',()=>{const csv='date,duration_minutes,bedtime,wake_time,quality,deep_minutes,rem_minutes,awake_minutes,source,notes\n2026-10-27,450,23:00,06:30,4,95,105,20,GARMIN,Exemple à remplacer';const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='tempo-modele-sommeil.csv';a.click();URL.revokeObjectURL(url);});
+function applyTheme(theme){currentTheme=theme==='light'?'light':'dark';document.documentElement.dataset.theme=currentTheme;const button=document.getElementById('themeToggle');if(button){button.textContent=currentTheme==='light'?'☾ Mode sombre':'☀ Mode clair';button.setAttribute('aria-label',currentTheme==='light'?'Activer le mode sombre':'Activer le mode clair');}try{localStorage.setItem('tempo-theme-v1',currentTheme);}catch(err){}}
+try{const themeSaved=localStorage.getItem('tempo-theme-v1');if(themeSaved==='light'||themeSaved==='dark')currentTheme=themeSaved;}catch(err){}
+document.getElementById('themeToggle').addEventListener('click',()=>applyTheme(currentTheme==='dark'?'light':'dark'));
+applyTheme(currentTheme);
+const now=new Date();const days=['DIMANCHE','LUNDI','MARDI','MERCREDI','JEUDI','VENDREDI','SAMEDI'];const months=['JAN.','FÉV.','MARS','AVR.','MAI','JUIN','JUIL.','AOÛT','SEPT.','OCT.','NOV.','DÉC.'];document.getElementById('todayLabel').textContent=`${days[now.getDay()]} · ${now.getDate()} ${months[now.getMonth()]}`;
+renderHabits();
+renderEvents();
+renderSleep();
+saveState();
+</script>
+</body>
+</html>
